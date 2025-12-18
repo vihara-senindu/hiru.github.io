@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Today’s News</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<h1>📰 Today’s News (Auto Refresh every 1 minute)</h1>
+
+<p id="last-updated" style="text-align:center; color:gray;">
+    Last updated: --
+</p>
+
+<div id="news-container" class="news-container">
+    Loading latest news...
+</div>
+
+<script>
+async function loadNews() {
+    try {
+        const response = await fetch("/latest-news");
+        const news = await response.json();
+
+        let html = "";
+        news.forEach(article => {
+            html += `
+            <div class="news-card">
+                ${article.image ? `<img src="${article.image}">` : ""}
+                <h2>${article.title}</h2>
+                <p>${article.content.substring(0, 300)}...</p>
+                <a href="${article.link}" target="_blank">Read full article</a>
+            </div>`;
+        });
+
+        document.getElementById("news-container").innerHTML =
+            html || "<p>No news available for today.</p>";
+
+        document.getElementById("last-updated").innerText =
+            "Last updated: " + new Date().toLocaleTimeString();
+
+    } catch (error) {
+        document.getElementById("news-container").innerHTML =
+            "<p>Error loading news.</p>";
+    }
+}
+
+// Load immediately
+loadNews();
+
+// Auto refresh every 60 seconds (1 minute)
+setInterval(loadNews, 60000);
+</script>
+
+</body>
+</html>
